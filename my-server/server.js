@@ -1,23 +1,22 @@
 const express = require('express'); // framework
-const app = express();  // object tao tu express dung cau hinh route, middleware
-const port = 3001; 
+const app = express();  // object app tao tu express 
+const port = 3000; 
 const pathModule = require('path'); // thu vien path : lam viec voi cac duong dan path
 const fs = require('fs'); // thu vien file system lam viec voi he thong tep
 
 app.use(express.urlencoded({ extended: true })); // middleware xu ly du lieu trong body cua request, phuong thuc : POST.express.urlencoded()\
 
 // Set view engine
-app.set('view engine', 'ejs');
-app.set('views', pathModule.join(__dirname, 'views'));
+app.set('view engine', 'ejs'); // ejs render view
+app.set('views', pathModule.join(__dirname, 'views')); // xac dinh thu muc chua file view. --dirname : bien global trong node.js
 
-// Đường dẫn đến file users.json
+// set path 
 const usersPath = './users.json';
-
-// Kiểm tra sự tồn tại của file users.json và tạo nếu không có
+// kiem tra du lieu nguoi dung
 const checkIfFileExists = () => {
   try {
     if (!fs.existsSync(usersPath)) {
-      fs.writeFileSync(usersPath, JSON.stringify([])); // Tạo file rỗng nếu không tồn tại
+      fs.writeFileSync(usersPath, JSON.stringify([])); // Tạo file trong neu file ton tai
       console.log('users.json file created');
     }
   } catch (err) {
@@ -25,9 +24,9 @@ const checkIfFileExists = () => {
   }
 };
 
-// Route chính
+// Route trang chu
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.send('Hello WARP!');
 });
 
 // Route cho trang login
@@ -40,14 +39,15 @@ app.get('/signup', (req, res) => {
   res.render('signup');
 });
 
-// Xử lý đăng ký người dùng
+// xu ly dang ky nguoi dung
 app.post('/signup', (req, res) => {
   const { username, password } = req.body;
   const newUser = { username, password };
+// app.post : xu ly yeu cau http post den route 
 
   checkIfFileExists();
 
-  // Đọc dữ liệu từ file users.json
+  // filesystem read 
   fs.readFile(usersPath, (err, data) => {
     if (err) {
       return res.send('Error reading user data!');
@@ -55,20 +55,20 @@ app.post('/signup', (req, res) => {
 
     let users = [];
     try {
-      users = JSON.parse(data);  // Nếu dữ liệu không hợp lệ, sẽ trả về mảng rỗng
+      users = JSON.parse(data);  // data err -> tra ve rong
     } catch (e) {
       console.log('Invalid JSON in users.json, resetting data.');
-      users = [];  // Nếu có lỗi trong việc phân tích cú pháp, trả về mảng rỗng
+      users = [];  
     }
 
-    // Kiểm tra nếu người dùng đã tồn tại
+    // check info
     if (users.some(u => u.username === username)) {
       return res.send('Username already exists!');
     }
 
     users.push(newUser);
 
-    // Ghi dữ liệu vào file
+    // read to file json
     fs.writeFile(usersPath, JSON.stringify(users, null, 2), (err) => {
       if (err) {
         return res.send('Error saving user data!');
@@ -78,7 +78,7 @@ app.post('/signup', (req, res) => {
   });
 });
 
-// Xử lý đăng nhập người dùng
+// login
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
@@ -91,10 +91,10 @@ app.post('/login', (req, res) => {
 
     let users = [];
     try {
-      users = JSON.parse(data);  // Nếu dữ liệu không hợp lệ, sẽ trả về mảng rỗng
+      users = JSON.parse(data);  // err data -> rong
     } catch (e) {
       console.log('Invalid JSON in users.json, resetting data.');
-      users = [];  // Nếu có lỗi trong việc phân tích cú pháp, trả về mảng rỗng
+      users = [];  // err -> loi
     }
 
     const user = users.find(u => u.username === username && u.password === password);
@@ -107,7 +107,7 @@ app.post('/login', (req, res) => {
   });
 });
 
-// Lắng nghe yêu cầu ở cổng 3000
+// check request 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
