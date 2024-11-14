@@ -1,43 +1,113 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const app = express();
+const express = require('express'); // framework
+const app = express();  // object tao tu express dung cau hinh route, middleware
+const port = 3001; 
+const pathModule = require('path'); // thu vien path : lam viec voi cac duong dan path
+const fs = require('fs'); // thu vien file system lam viec voi he thong tep
 
-// Cấu hình body-parser để xử lý dữ liệu từ form
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true })); // middleware xu ly du lieu trong body cua request, phuong thuc : POST.express.urlencoded()\
 
-// Thiết lập EJS làm view engine
+// Set view engine
 app.set('view engine', 'ejs');
+app.set('views', pathModule.join(__dirname, 'views'));
 
-// Cấu hình cổng
-const PORT = process.env.PORT || 3000;
+// Đường dẫn đến file users.json
+const usersPath = './users.json';
 
-// Route trang chính
+// Kiểm tra sự tồn tại của file users.json và tạo nếu không có
+const checkIfFileExists = () => {
+  try {
+    if (!fs.existsSync(usersPath)) {
+      fs.writeFileSync(usersPath, JSON.stringify([])); // Tạo file rỗng nếu không tồn tại
+      console.log('users.json file created');
+    }
+  } catch (err) {
+    console.log('Error creating users.json file:', err);
+  }
+};
+
+// Route chính
 app.get('/', (req, res) => {
-  res.send('Welcome to the home page')``;
+  res.send('Hello World!');
 });
 
-// Khởi động server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
-// Route trang đăng nhập
+// Route cho trang login
 app.get('/login', (req, res) => {
   res.render('login');
 });
 
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  // Thực hiện xác thực người dùng
-  res.send(`Logged in as ${username}`);
-});
-
-// Route trang đăng ký
+// Route cho trang signup
 app.get('/signup', (req, res) => {
   res.render('signup');
 });
 
+// Xử lý đăng ký người dùng
 app.post('/signup', (req, res) => {
   const { username, password } = req.body;
-  // Lưu thông tin người dùng mới vào cơ sở dữ liệu (giả sử)
-  res.send(`User ${username} signed up successfully!`);
+  const newUser = { username, password };
+
+  checkIfFileExists();
+
+  // Đọc dữ liệu từ file users.json
+  fs.readFile(usersPath, (err, data) => {
+    if (err) {
+      return res.send('Error reading user data!');
+    }
+
+    let users = [];
+    try {
+      users = JSON.parse(data);  // Nếu dữ liệu không hợp lệ, sẽ trả về mảng rỗng
+    } catch (e) {
+      console.log('Invalid JSON in users.json, resetting data.');
+      users = [];  // Nếu có lỗi trong việc phân tích cú pháp, trả về mảng rỗng
+    }
+
+    // Kiểm tra nếu người dùng đã tồn tại
+    if (users.some(u => u.username === username)) {
+      return res.send('Username already exists!');
+    }
+
+    users.push(newUser);
+
+    // Ghi dữ liệu vào file
+    fs.writeFile(usersPath, JSON.stringify(users, null, 2), (err) => {
+      if (err) {
+        return res.send('Error saving user data!');
+      }
+      res.redirect('/login');
+    });
+  });
+});
+
+// Xử lý đăng nhập người dùng
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+
+  checkIfFileExists();
+
+  fs.readFile(usersPath, (err, data) => {
+    if (err) {
+      return res.send('Error reading user data!');
+    }
+
+    let users = [];
+    try {
+      users = JSON.parse(data);  // Nếu dữ liệu không hợp lệ, sẽ trả về mảng rỗng
+    } catch (e) {
+      console.log('Invalid JSON in users.json, resetting data.');
+      users = [];  // Nếu có lỗi trong việc phân tích cú pháp, trả về mảng rỗng
+    }
+
+    const user = users.find(u => u.username === username && u.password === password);
+
+    if (user) {
+      res.send('Login successful!');
+    } else {
+      res.send('Invalid username or password!');
+    }
+  });
+});
+
+// Lắng nghe yêu cầu ở cổng 3000
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
 });
