@@ -1,0 +1,1 @@
+c phan tu cua mang (cach nhau boi dau cach):
