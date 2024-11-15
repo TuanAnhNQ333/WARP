@@ -39,3 +39,23 @@ else if(a != 0)
 kieu du lieu : number , string , boolean , underfined , null , symbol , 
 phuc tap : function , object 
  */
+var age; 
+var  isNull = null; // nothing
+// symbol
+var id = Symbol('id');
+var id2 = Symbol('id');
+var myFunction = function() {
+    alert('tuan anh dz vl');
+}
+
+myFunction();
+// object
+var myObject = {
+    name: 'tuan anh',
+    age: 20,
+    address: 'Ha Noi',
+    myFunction: function(){
+
+    }
+};
+var myArray = [];
