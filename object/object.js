@@ -50,7 +50,7 @@ let myObject = {
     }
 }
 myObject.greet();
-myObject.bywhom();
+myObject.bywhom
 
 
 
