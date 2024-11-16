@@ -4,7 +4,7 @@ du lieu, tuong tu nhu xml o cau truc thong tin
 
 */
 {
-    "Avengers": [
+    "Avengers" [
         {
             "Name": "Tony stark",
             "also known as": "Iron man",
